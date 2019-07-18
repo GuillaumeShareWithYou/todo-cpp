@@ -3,8 +3,22 @@
 #include <fstream>
 #include <iostream>
 #include <algorithm>
+#include <sstream>
 
 const char* fileName = "C:\\Users\\g.mathieu.ext\\cmd\\resources\\list.txt";
+
+
+std::string trim(std::string s) {
+    std::ostringstream ss;
+    int i = 0;
+    while(s[i] == ' ' && i < s.length()) {
+        i++;
+    }
+    while(i < s.length()) {
+        ss << s[i++];
+    }
+    return ss.str();
+}
 
 bool verifyContainX(std::string s) {
     unsigned i = 0; 
@@ -77,7 +91,7 @@ while (getline(fin, line)) {
     if (count != number) // write all lines to temp other than the line marked fro erasing
         temp << line << std::endl;
     else {
-        temp << "[x]" << line.substr(3) << std::endl;
+        temp << "[x]" << line.substr(line.find("]") + 1) << std::endl;
     }
 }
 
@@ -104,7 +118,7 @@ while (getline(fin, line)) {
     if (count != number) // write all lines to temp other than the line marked fro erasing
         temp << line << std::endl;
     else {
-        temp << "[ ]" << line.substr(3) << std::endl;
+        temp << "[]" << line.substr(line.find("]") + 1) << std::endl;
     }
 }
 
@@ -118,7 +132,6 @@ rename("temp.txt", fileName);
 }
 
 int main() {
-
    
     printTaskToBeDone();
 
@@ -132,15 +145,17 @@ int main() {
         if(answer == "q"){
             quit = true;
         } else if(answer.find("+") == 0) {
-            std::string task = answer.substr(2);
+            std::string task = answer.substr(1);
+            task = trim(task);
+
             std::ofstream file;
             file.open(fileName, std::ofstream::app);
-            file << "[ ]" << task << "\n";
+            file << "[]" << task << "\n";
             file.close();
         } else if(answer == "l") {
             printTaskToBeDone();
-        } else if(answer.find("done") == 0) {
-            unsigned n = (unsigned) atoi(answer.substr(5).c_str());
+        } else if(answer.find("do") == 0) {
+            unsigned n = (unsigned) atoi(answer.substr(3).c_str());
             declareTaskDone(n);
             printTaskToBeDone();
         } else if(answer == "all") {
