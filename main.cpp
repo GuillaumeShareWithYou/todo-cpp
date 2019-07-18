@@ -40,24 +40,25 @@ void printTaskToBeDone() {
   
     auto todos = getAll();
     std::vector<std::pair<std::string, bool>> todoNotDone;
-
-    std::copy_if(todos.begin(), todos.end(), std::back_insert_iterator(todoNotDone), [](auto todo) {return !todo.second;});
-
-    if(todoNotDone.empty()){
-        std::cout << "Nothing to do :)" << std::endl;
-    } else {
-        unsigned count = 1;
-        std::for_each(todoNotDone.begin(), todoNotDone.end(), [&count](auto todo){
-            std::cout << count++ <<"- " << todo.first << std::endl;
-        });     
+    unsigned count = 0;
+    unsigned countTodo = 0;
+    std::for_each(todos.begin(), todos.end(), [&](auto todo) {
+        ++count;
+        if(!todo.second) {
+               std::cout << "#" << count << " [ ] " << todo.first << std::endl;
+               ++countTodo;
+        }
+    });
+    if(countTodo == 0) {
+        std::cout << "Nothing to do :(" << std::endl;
     }
 }
 void printAll() {
 
     auto todos = getAll();
-
-    std::for_each(todos.begin(), todos.end(), [](auto todo) {
-        std::cout << (todo.second ? "[x]" : "[ ]") << " " << todo.first << std::endl;
+    unsigned count = 1;
+    std::for_each(todos.begin(), todos.end(), [&count](auto todo) {
+        std::cout << "#" << count++ << " " << (todo.second ? "[x]" : "[ ]") << " " << todo.first << std::endl;
     });
 
 }
@@ -72,12 +73,11 @@ unsigned count = 0;
 
 while (getline(fin, line)) {
     // counting task not done
-    if(line.find("[ ]") == 0) count++;
+    count++;
     if (count != number) // write all lines to temp other than the line marked fro erasing
         temp << line << std::endl;
     else {
         temp << "[x]" << line.substr(3) << std::endl;
-        std::cout << "removing line " << count << std::endl;
     }
 }
 
@@ -86,6 +86,34 @@ fin.close();
 
 remove(fileName);
 rename("temp.txt", fileName);
+
+}
+
+void declareTaskNotDone(unsigned number) {
+
+std::string line;
+std::ifstream fin;
+fin.open(fileName);
+std::ofstream temp; // contents of path must be copied to a temp file then renamed back to the path file
+temp.open("temp.txt");
+unsigned count = 0;
+
+while (getline(fin, line)) {
+    // counting task not done
+    count++;
+    if (count != number) // write all lines to temp other than the line marked fro erasing
+        temp << line << std::endl;
+    else {
+        temp << "[ ]" << line.substr(3) << std::endl;
+    }
+}
+
+temp.close();
+fin.close();
+
+remove(fileName);
+rename("temp.txt", fileName);
+
 
 }
 
@@ -98,7 +126,7 @@ int main() {
     std::string answer;
     do {
         
-        std::cout << "What do yo want ? (l,+,rm,q)" << std::endl;
+        std::cout << "$ ";
         std::getline(std::cin, answer);
         
         if(answer == "q"){
@@ -111,14 +139,16 @@ int main() {
             file.close();
         } else if(answer == "l") {
             printTaskToBeDone();
-        } else if(answer.find("rm") == 0) {
-            std::cout << "what task is done ?" << std::endl;
-            unsigned n = (unsigned) atoi(answer.substr(3).c_str());
-            std::cout <<"line ask to remove : " <<  n << std::endl;
+        } else if(answer.find("done") == 0) {
+            unsigned n = (unsigned) atoi(answer.substr(5).c_str());
             declareTaskDone(n);
             printTaskToBeDone();
-        } else if(answer == "lall") {
+        } else if(answer == "all") {
             printAll();
+        } else if(answer.find("undo") == 0) {
+            unsigned n = (unsigned) atoi(answer.substr(5).c_str());
+            declareTaskNotDone(n);
+            printTaskToBeDone();
         }
 
 
